@@ -23,7 +23,6 @@ def main():
     parser.add_argument("receiver_port", type=int, help="Receiver port to connect to")
     parser.add_argument("-q", "--quiet", action="store_true", help="Minimal output (for assignment)")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output (show all intermediate values)")
-    # Optional explicit key paths
     parser.add_argument("--sender-priv", help="Path to sender private key (PEM)")
     parser.add_argument("--sender-pub", help="Path to sender public key (PEM)")
     parser.add_argument("--receiver-pub", help="Path to receiver public key (PEM)")
@@ -32,7 +31,6 @@ def main():
     receiver_ip = args.receiver_ip
     receiver_port = args.receiver_port
 
-    # verbosity: 0 = quiet, 1 = normal, 2 = verbose
     verbosity = 1
     if args.quiet:
         verbosity = 0
@@ -40,7 +38,6 @@ def main():
         verbosity = 2
 
     def log(level, *messages):
-        # level: 0=quiet-only, 1=normal, 2=debug/verbose
         if verbosity >= level:
             print(*messages)
 
@@ -138,7 +135,7 @@ def main():
         sock.sendall(len(payload_bytes).to_bytes(4, "big"))
         sock.sendall(payload_bytes)
         log(1, "[+] Payload sent successfully!")
-        
+
         try:
             response = sock.recv(1024).decode("utf-8")
             log(1, f"[+] Response from receiver: {response}")
