@@ -1,0 +1,10 @@
+keys/*_private.pem
+II3230_Tugas_Cryptography_Instruksi.pdf
+II3230_Tugas_Cryptography.pdf
+
+# Python common ignores
+__pycache__/
+*.py[cod]
+# Editor / OS files
+.vscode/
+.DS_Store
