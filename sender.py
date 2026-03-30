@@ -44,7 +44,6 @@ def main():
         if verbosity >= level:
             print(*messages)
 
-    # ===== STEP 1: Plaintext =====
     plaintext = (
         "Halo Bat, saya ingin menjalin kerjasama untuk melakukan training "
         "yang maksimal kepada rAI, saya juga akan bantu merahasiakan project "
@@ -57,20 +56,20 @@ def main():
     log(1, "=" * 60)
     log(2, f"\n[1] Plaintext:\n    {plaintext}")
 
-    # ===== STEP 2: Generate AES-256 symmetric key =====
+    #  generate AES-256 symmetric key 
     aes_key = get_random_bytes(32)  # 256-bit
     aes_iv = get_random_bytes(16)   # IV for CBC mode
     log(2, f"\n[2] AES-256 Key (hex): {aes_key.hex()}")
     log(2, f"    AES IV (hex):      {aes_iv.hex()}")
 
-    # ===== STEP 3: Encrypt plaintext with AES-256-CBC =====
+    # enkripsi plaintext dengan kunci AES-256-CBC 
     cipher_aes = AES.new(aes_key, AES.MODE_CBC, aes_iv)
     plaintext_bytes = plaintext.encode("utf-8")
     ciphertext = cipher_aes.encrypt(pad(plaintext_bytes, AES.block_size))
     ciphertext_b64 = base64.b64encode(ciphertext).decode("utf-8")
     log(2, f"\n[3] Ciphertext (base64):\n    {ciphertext_b64}")
 
-    # ===== STEP 4: Encrypt AES key with receiver's RSA public key =====
+    # enkripsi symmetric key (AES Key) dengan public key (RSA Key) penerima
     if args.receiver_pub:
         receiver_pub_path = args.receiver_pub
     else:
@@ -84,12 +83,12 @@ def main():
     encrypted_aes_key_b64 = base64.b64encode(encrypted_aes_key).decode("utf-8")
     log(2, f"\n[4] Encrypted AES Key (base64):\n    {encrypted_aes_key_b64}")
 
-    # ===== STEP 5: Hash plaintext with SHA-256 =====
+    # hash plaintext yang telah didefinisikan sebelumnya dengan SHA-256
     hash_obj = SHA256.new(plaintext_bytes)
     hash_hex = hash_obj.hexdigest()
     log(2, f"\n[5] SHA-256 Hash:\n    {hash_hex}")
 
-    # ===== STEP 6: Digital Signature with sender's RSA private key =====
+    # buat digital signature dengan private key milik pengirim
     if args.sender_priv:
         sender_priv_path = args.sender_priv
     else:
@@ -102,8 +101,8 @@ def main():
     signature_b64 = base64.b64encode(signature).decode("utf-8")
     log(2, f"\n[6] Digital Signature (base64):\n    {signature_b64}")
 
-    # ===== STEP 7: Build payload =====
-    # Get local IP based on route to receiver (so Tailscale IP is detected correctly)
+    # build payload yg berisi (ciphertext, hash, dan digital signature) untuk dikirim ke penerima
+    # ngambil IP virtual yang udah didapetin dari tailscale
     s_temp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s_temp.connect((receiver_ip, receiver_port))
@@ -129,19 +128,17 @@ def main():
     log(2, f"\n[7] Payload JSON:")
     log(2, json.dumps(payload, indent=2))
 
-    # Send via TCP socket
+    # ngirim payload melalui TCP Socket dengan memanfaatkan tailscale untuk dapetin ip virtual
     log(1, f"\n[*] Sending payload to {receiver_ip}:{receiver_port} ...")
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(15)
         sock.connect((receiver_ip, receiver_port))
         payload_bytes = json.dumps(payload).encode("utf-8")
-        # send length (4 bytes) then payload
         sock.sendall(len(payload_bytes).to_bytes(4, "big"))
         sock.sendall(payload_bytes)
         log(1, "[+] Payload sent successfully!")
-
-        # Wait for response
+        
         try:
             response = sock.recv(1024).decode("utf-8")
             log(1, f"[+] Response from receiver: {response}")
