@@ -21,7 +21,6 @@ def generate_keys(name):
 
 
 if __name__ == "__main__":
-    # Allow any safe name (letters, digits, underscore, dash) so you can use custom names
     import re
 
     if len(sys.argv) != 2:
