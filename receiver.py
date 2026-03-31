@@ -72,7 +72,6 @@ def main():
     conn, addr = server.accept()
     log(1, f"\n[+] Koneksi diterima dari {addr[0]}:{addr[1]}")
 
-    # Terima data: baca panjang (4 bytes) lalu payload
     raw_len = conn.recv(4)
     if not raw_len:
         log(1, "[!] Tidak ada data diterima.")
@@ -151,7 +150,6 @@ def main():
         log(1, "    >> SIGNATURE TIDAK VALID - Pengirim tidak terverifikasi!")
         sig_valid = False
 
-    # ===== KESIMPULAN =====
     log(1, "\n" + "=" * 60)
     log(1, "KESIMPULAN:")
     log(1, "=" * 60)
